@@ -1,7 +1,26 @@
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
 .tool-container {
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 1100px;
+  margin: 0;
   padding: 48px 24px;
+  flex: 1 0 auto;
+  align-self: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .tool-hero {
@@ -9,34 +28,75 @@
   margin-bottom: 48px;
 }
 
+.tool-hero .section-subtitle {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .tool-form {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  flex: 1 0 auto;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  flex: 1 0 auto;
+}
+
+.form-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
 }
 
 .converter-input {
   width: 100%;
-  resize: vertical;
-  min-height: 320px;
+  resize: none;
+  overflow: hidden;
+  min-height: 200px;
   font-family: var(--font-mono);
   font-size: 16px;
   line-height: 1.6;
   tab-size: 2;
+  flex: 1 0 auto;
 }
 
 .converter-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 20px;
-  padding: 0 4px;
+  gap: 8px;
+  padding: 4px;
+  background: var(--bg-surface);
+  border: var(--border-thin);
+  border-radius: 2px;
+}
+
+.converter-actions.is-fixed {
+  position: fixed;
+  top: 80px;
+  right: max(24px, calc((100% - 1100px) / 2 + 24px));
+  z-index: 90;
+  border: var(--border-medium);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+  animation: actions-pin-in 0.18s ease both;
+}
+
+@keyframes actions-pin-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .converter-actions .btn-primary,
@@ -44,59 +104,29 @@
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
 }
 
 .converter-actions .btn-primary svg {
   flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
 }
 
-/* Desktop: convert buttons anchor to the far ends, copy floats centered */
-@media (min-width: 769px) {
-  .converter-actions {
-    padding: 0 8px;
-  }
-
-  #to-textile {
-    margin-right: auto;
-  }
-
-  #copy-btn {
-    margin: 0 auto;
-  }
-
-  #to-markdown {
-    margin-left: auto;
-  }
-}
-
-/* Mobile: convert buttons share one row (half width each), Copy full width below */
 @media (max-width: 768px) {
   .tool-container {
     padding: 24px 16px;
   }
 
-  .converter-actions {
+  .form-group__header {
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 0;
+    row-gap: 8px;
   }
 
-  .converter-actions .btn-primary,
-  .converter-actions .btn-secondary {
-    justify-content: center;
-  }
-
-  #to-textile,
-  #to-markdown {
-    order: 1;
-    flex: 1 1 calc(50% - 6px);
-    width: auto;
-  }
-
-  #copy-btn {
-    order: 2;
-    flex: 1 1 100%;
-    width: 100%;
+  .converter-actions.is-fixed {
+    top: 76px;
+    right: 16px;
   }
 }
