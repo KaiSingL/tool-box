@@ -137,8 +137,12 @@ function updatePlan() {
             '  →  page ' + s + ' of ' + state.newFile.name +
             '. Output stays ' + state.origPages + ' page' +
             (state.origPages === 1 ? '' : 's') + '.';
+        summary.hidden = false;
+        summary.classList.remove('hidden');
     } else {
-        summary.textContent = 'Load both files to see the swap.';
+        summary.textContent = '';
+        summary.hidden = true;
+        summary.classList.add('hidden');
     }
 
     scheduleThumbs();

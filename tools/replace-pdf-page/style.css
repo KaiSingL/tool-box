@@ -170,6 +170,10 @@
     border: var(--border-thin);
 }
 
+.plan[hidden] {
+    display: none;
+}
+
 .actions {
     display: flex;
     flex-wrap: wrap;
