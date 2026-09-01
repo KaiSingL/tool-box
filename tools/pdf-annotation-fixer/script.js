@@ -253,8 +253,9 @@
 
   function setStatus(msg, isErr) {
     const el = $("status");
-    el.textContent = msg;
+    el.textContent = msg || "";
     el.className = isErr ? "status err" : "status";
+    el.hidden = !msg;
   }
 
   async function handlePdfFiles(fileList) {

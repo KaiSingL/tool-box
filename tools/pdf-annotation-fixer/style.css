@@ -80,6 +80,10 @@
     cursor: not-allowed;
 }
 
+.status[hidden] {
+    display: none;
+}
+
 .status.err {
     color: #f07178;
 }
