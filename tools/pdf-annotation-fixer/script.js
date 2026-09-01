@@ -201,46 +201,110 @@
     return { name: file.name, bytes, doc, pageCount: pages.length, items, file };
   }
 
+  function updateChrome() {
+    const hasFiles = state.files.length > 0;
+    const toolbar = $("toolbar");
+    if (toolbar) {
+      toolbar.hidden = !hasFiles;
+      toolbar.classList.toggle("hidden", !hasFiles);
+    }
+    const exportBtn = $("exportBtn");
+    if (exportBtn) {
+      exportBtn.disabled = !hasFiles || !state.fontFamily || state.exporting;
+    }
+    const gate = $("fontGate");
+    if (gate) gate.hidden = !!state.fontFamily;
+  }
+
   function renderTable() {
     const tbody = $("tbody");
+    const emptyState = $("emptyState");
+    const tableWrap = $("tableWrap");
+    const table = $("annTable");
+    const showUnchanged = $("showUnchanged") && $("showUnchanged").checked;
+    const showMethod = $("showMethod") && $("showMethod").checked;
+    if (table) table.classList.toggle("show-method", !!showMethod);
+
+    updateChrome();
+
     const all = [];
     state.files.forEach((f, fi) => {
       f.items.forEach((it, ii) => all.push({ fi, ii, f, it }));
     });
-    const emptyState = $("emptyState");
-    const tableWrap = $("tableWrap");
-    if (!all.length) {
+    const changedCount = all.filter((x) => x.it.changed).length;
+    const visible = all.filter((x) => showUnchanged || x.it.changed);
+
+    if ($("stats")) {
+      $("stats").textContent = hasFilesStats(all.length, changedCount);
+    }
+
+    if (!state.files.length) {
       tbody.innerHTML = "";
-      $("stats").textContent = "";
-      if (emptyState) emptyState.classList.remove("hidden");
+      if (emptyState) {
+        emptyState.hidden = true;
+        emptyState.classList.add("hidden");
+      }
       if (tableWrap) tableWrap.classList.add("hidden");
       syncHeaderCheck();
       return;
     }
-    if (emptyState) emptyState.classList.add("hidden");
+
+    if (!visible.length) {
+      tbody.innerHTML = "";
+      if (tableWrap) tableWrap.classList.add("hidden");
+      if (emptyState) {
+        emptyState.hidden = false;
+        emptyState.classList.remove("hidden");
+        emptyState.textContent = all.length
+          ? "No changed annotations. Turn on Show unchanged to list them."
+          : "No annotations in these PDFs.";
+      }
+      syncHeaderCheck();
+      return;
+    }
+
+    if (emptyState) {
+      emptyState.hidden = true;
+      emptyState.classList.add("hidden");
+    }
     if (tableWrap) tableWrap.classList.remove("hidden");
-    tbody.innerHTML = all
-      .map(({ fi, ii, f, it }) => {
+
+    const chunks = [];
+    state.files.forEach((f, fi) => {
+      const rows = f.items
+        .map((it, ii) => ({ it, ii }))
+        .filter((x) => showUnchanged || x.it.changed);
+      if (!rows.length) return;
+      chunks.push(
+        '<tr class="group"><td colspan="6">' + escapeHtml(f.name) + "</td></tr>"
+      );
+      rows.forEach(({ it, ii }) => {
         const id = fi + ":" + ii;
         const checked = it.changed ? "checked" : "";
-        return `<tr class="${it.changed ? "changed" : "same"}">
+        chunks.push(
+          `<tr class="${it.changed ? "changed" : "same"}">
           <td><input type="checkbox" data-id="${id}" ${checked}></td>
-          <td>${escapeHtml(f.name)}</td>
           <td>${it.pageIndex + 1}</td>
           <td>${escapeHtml(it.subtype)} / ${escapeHtml(it.field)}</td>
           <td class="orig" title="${escapeHtml(it.original)}">${escapeHtml(it.original)}</td>
           <td class="fix" title="${escapeHtml(it.recovered)}">${escapeHtml(it.recovered)}</td>
           <td class="method">${escapeHtml(it.method)}</td>
-        </tr>`;
-      })
-      .join("");
-    const changed = all.filter((x) => x.it.changed).length;
-    $("stats").textContent =
+        </tr>`
+        );
+      });
+    });
+    tbody.innerHTML = chunks.join("");
+    syncHeaderCheck();
+  }
+
+  function hasFilesStats(total, changed) {
+    if (!state.files.length) return "";
+    return (
       state.files.length + " PDF(s), " +
       state.files.reduce((n, f) => n + f.pageCount, 0) + " page(s), " +
-      all.length + " annotation field(s), " +
-      changed + " to fix.";
-    syncHeaderCheck();
+      changed + " to fix" +
+      (total !== changed ? ", " + total + " total" : "") + "."
+    );
   }
 
   function escapeHtml(s) {
@@ -275,8 +339,12 @@
         else state.files.push(loaded);
       }
       renderTable();
-      $("pdfDropTitle").textContent = state.files.length + " PDF loaded";
-      $("pdfDropHint").textContent = state.files.map(function (f) { return f.name; }).join(", ");
+      const n = state.files.length;
+      $("pdfDropTitle").textContent = n + " PDF" + (n === 1 ? "" : "s") + " loaded";
+      $("pdfDropHint").textContent = "or click to add more";
+      $("pdfChips").innerHTML = state.files.map(function (f) {
+        return '<span class="chip">' + escapeHtml(f.name) + "</span>";
+      }).join("");
       $("pdfDrop").classList.add("hasfile");
       setStatus("Loaded. Review recovered text, then export.");
     } catch (err) {
@@ -332,12 +400,16 @@
       console.warn("FontFace load failed", eFace);
       $("exportBtn").disabled = true;
       setStatus("Could not load this font in the browser: " + (eFace && eFace.message ? eFace.message : eFace), true);
+      updateChrome();
       return;
     }
+    document.documentElement.style.setProperty("--ann-font", '"' + family + '"');
     $("fontLabel").textContent = name + " (" + Math.round(state.fontBytes.length / 1024) + " KB)";
+    $("fontHint").textContent = "Ready for export";
     $("fontDrop").classList.add("hasfile");
-    $("exportBtn").disabled = false;
     setStatus("Font loaded: " + name + ". Export is ready.");
+    updateChrome();
+    renderTable();
   }
 
   function wireDrop(zoneId, inputId, handler) {
@@ -375,6 +447,14 @@
   });
   wireDrop("pdfDrop", "pdfInput", handlePdfFiles);
   wireDrop("fontDrop", "fontInput", handleFontFiles);
+
+  if ($("showUnchanged")) {
+    $("showUnchanged").addEventListener("change", renderTable);
+  }
+  if ($("showMethod")) {
+    $("showMethod").addEventListener("change", renderTable);
+  }
+  updateChrome();
 
   function rowChecks() {
     return document.querySelectorAll("#tbody input[type=checkbox][data-id]");
@@ -858,7 +938,7 @@
       setStatus("Export failed: " + (err && err.message ? err.message : err), true);
     } finally {
       state.exporting = false;
-      $("exportBtn").disabled = !state.fontFamily;
+      updateChrome();
     }
   });
 

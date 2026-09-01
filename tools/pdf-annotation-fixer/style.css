@@ -2,30 +2,60 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .tool-hero {
-    text-align: center;
-    margin-bottom: 36px;
+    text-align: left;
+}
+
+.limits {
+    margin-top: 16px;
+    max-width: 56ch;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.limits summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.limits p {
+    margin: 8px 0 0;
+}
+
+.work-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    background: var(--bg-surface);
+    border: var(--border-thin);
 }
 
 .tool-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    margin-bottom: 20px;
 }
 
 .drop {
     position: relative;
-    min-height: 140px;
+    min-height: 148px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     cursor: pointer;
     border: 2px dashed var(--border-color);
-    background: var(--bg-surface);
+    background: var(--bg-primary);
 }
 
 .drop:hover,
@@ -44,13 +74,24 @@
     border-color: var(--accent);
 }
 
+.drop.hasfile .drop-icon {
+    display: none;
+}
+
 .drop input {
     display: none;
+}
+
+.drop-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--text-muted);
 }
 
 .drop strong {
     font-family: var(--font-display);
     font-size: 16px;
+    word-break: break-all;
 }
 
 .drop span,
@@ -61,21 +102,71 @@
     color: var(--text-muted);
 }
 
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border: var(--border-thin);
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gate {
+    align-self: flex-start;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--bg-primary);
+    background: var(--accent);
+    padding: 2px 8px;
+}
+
+.gate[hidden] {
+    display: none;
+}
+
 .toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 12px;
-    margin: 16px 0;
+}
+
+.toolbar[hidden],
+.hidden {
+    display: none;
 }
 
 .toolbar .status,
 .toolbar .stats {
-    flex: 1 1 180px;
+    flex: 1 1 160px;
 }
 
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin: 0;
+}
+
+.btn-primary:disabled {
     opacity: 0.45;
     cursor: not-allowed;
 }
@@ -91,7 +182,7 @@
 .table-wrap {
     overflow: auto;
     border: var(--border-thin);
-    background: var(--bg-surface);
+    background: var(--bg-primary);
 }
 
 table {
@@ -115,9 +206,27 @@ th {
     font-family: var(--font-display);
 }
 
+th.method,
+td.method {
+    display: none;
+}
+
+table.show-method th.method,
+table.show-method td.method {
+    display: table-cell;
+}
+
+tr.group td {
+    font-family: var(--font-display);
+    font-size: 13px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-bottom: var(--border-medium);
+}
+
 td.orig,
 td.fix {
-    max-width: 220px;
+    max-width: 240px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -131,6 +240,7 @@ td.orig {
 td.fix {
     color: var(--accent);
     font-weight: 600;
+    font-family: var(--ann-font, var(--font-mono));
 }
 
 td.orig.expanded,
@@ -138,14 +248,6 @@ td.fix.expanded {
     white-space: normal;
     word-break: break-all;
     overflow: visible;
-}
-
-.empty-state {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 40px 16px;
-    border: 2px dashed var(--border-color);
-    font-size: 13px;
 }
 
 td.method {
@@ -156,6 +258,18 @@ td.method {
 tr.same td.fix {
     color: var(--text-muted);
     font-weight: 400;
+}
+
+.empty-state {
+    text-align: left;
+    color: var(--text-muted);
+    padding: 16px 0;
+    font-size: 13px;
+    border: none;
+}
+
+.empty-state[hidden] {
+    display: none;
 }
 
 .empty {

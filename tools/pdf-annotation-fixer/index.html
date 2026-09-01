@@ -58,47 +58,71 @@
     <div class="tool-container">
       <div class="tool-hero">
         <h1 class="section-title">PDF Annotation Fixer</h1>
-        <p class="section-subtitle">Repair Chinese mojibake in PDF annotation text, rebuild on-page appearance, and paint text with an imported font. All processing stays in your browser.</p>
+        <p class="section-subtitle">Repair Chinese mojibake in PDF annotations. Nothing leaves this browser.</p>
+        <details class="limits">
+          <summary>Limits</summary>
+          <p>Export needs a single TTF or OTF Chinese font, not a .ttc collection. Appearance is rebuilt as painted text. Password-protected PDFs may fail.</p>
+        </details>
       </div>
 
-      <div class="tool-grid">
-        <div class="card-brutal drop" id="pdfDrop" tabindex="0">
-          <input id="pdfInput" type="file" accept="application/pdf,.pdf" multiple>
-          <p class="label-brutal">1. Load PDF files</p>
-          <strong id="pdfDropTitle">Drop PDFs here</strong>
-          <span id="pdfDropHint">or click to choose · multiple files · multi-page OK</span>
+      <div class="work-panel">
+        <div class="tool-grid">
+          <div class="drop" id="pdfDrop" tabindex="0">
+            <input id="pdfInput" type="file" accept="application/pdf,.pdf" multiple>
+            <p class="label-brutal">PDFs</p>
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <strong id="pdfDropTitle">Drop PDFs here</strong>
+            <span id="pdfDropHint">or click to choose · multiple files OK</span>
+            <div id="pdfChips" class="chips"></div>
+          </div>
+          <div class="drop" id="fontDrop" tabindex="0">
+            <input id="fontInput" type="file" accept=".ttf,.otf,.TTF,.OTF">
+            <p class="label-brutal">Chinese font</p>
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <strong id="fontLabel">Drop a TTF/OTF font here</strong>
+            <span id="fontHint">or click to choose · PingFang / Noto Sans TC</span>
+            <span id="fontGate" class="gate">Required for export</span>
+          </div>
         </div>
-        <div class="card-brutal drop" id="fontDrop" tabindex="0">
-          <input id="fontInput" type="file" accept=".ttf,.otf,.TTF,.OTF">
-          <p class="label-brutal">2. Import a Chinese font (required)</p>
-          <strong id="fontLabel">Drop a TTF/OTF font here</strong>
-          <span>or click to choose · PingFangTC-Regular.otf / Noto Sans TC</span>
-          <p class="hint">Required before export. Do not use .ttc collections.</p>
+
+        <div class="toolbar hidden" id="toolbar" hidden>
+          <button type="button" id="exportBtn" class="btn-primary" disabled>Export fixed PDFs</button>
+          <label class="toggle" for="showUnchanged">
+            <input type="checkbox" id="showUnchanged">
+            Show unchanged
+          </label>
+          <label class="toggle" for="showMethod">
+            <input type="checkbox" id="showMethod">
+            Show method
+          </label>
+          <div id="status" class="status" hidden></div>
+          <div id="stats" class="stats"></div>
         </div>
-      </div>
 
-      <div class="toolbar">
-        <button type="button" id="exportBtn" class="btn-primary" disabled>Export fixed PDFs</button>
-        <div id="status" class="status" hidden></div>
-        <div id="stats" class="stats"></div>
-      </div>
-
-      <div id="emptyState" class="empty-state">Load a PDF to list annotations.</div>
-      <div class="table-wrap hidden" id="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th><input type="checkbox" id="checkAll" title="Select all"></th>
-              <th>File</th>
-              <th>Page</th>
-              <th>Type / field</th>
-              <th>Original</th>
-              <th>Recovered</th>
-              <th>Method</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+        <div id="emptyState" class="empty-state hidden" hidden></div>
+        <div class="table-wrap hidden" id="tableWrap">
+          <table id="annTable">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="checkAll" title="Select all"></th>
+                <th>Page</th>
+                <th>Type / field</th>
+                <th>Original</th>
+                <th>Recovered</th>
+                <th class="method">Method</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
       </div>
 
     </div>
