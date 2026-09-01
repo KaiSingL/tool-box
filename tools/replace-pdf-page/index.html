@@ -58,64 +58,74 @@
     <div class="tool-container">
       <div class="tool-hero">
         <h1 class="section-title">Replace PDF Page</h1>
-        <p class="section-subtitle">Replace one page in a PDF with a page from another PDF. Runs entirely in your browser.</p>
+        <p class="section-subtitle">Swap one page in a PDF with a page from another file. Nothing leaves this browser.</p>
+        <details class="limits">
+          <summary>Limits</summary>
+          <p>Password-protected files may fail. Mixed paper sizes usually work. Bookmarks and form fields on the replaced page are dropped with that page.</p>
+        </details>
       </div>
 
-      <section class="card-brutal">
-        <h2 class="card-title">How it works</h2>
-        <ol class="how-list">
-          <li>Load both PDFs in the browser with pdf-lib.</li>
-          <li>Copy every original page except the one you chose to replace.</li>
-          <li>Insert the chosen replacement page in that same position.</li>
-          <li>Save a new PDF and trigger a download.</li>
-        </ol>
-        <p class="hint">Password-protected files may fail. Mixed paper sizes usually work. Bookmarks and form fields on the replaced page are dropped with that page.</p>
-      </section>
-
-      <section class="card-brutal">
-        <h2 class="card-title">1. Choose files</h2>
+      <div class="work-panel">
         <div class="tool-grid">
           <div class="drop" id="dropOrig" tabindex="0">
             <input id="orig" type="file" accept="application/pdf,.pdf">
-            <p class="label-brutal">Combined PDF</p>
+            <p class="label-brutal">Original PDF</p>
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
             <strong id="origTitle">Drop PDF here</strong>
-            <span id="origMeta">or click to choose · the document with the page to replace</span>
+            <span id="origMeta">or click to choose</span>
           </div>
           <div class="drop" id="dropNew" tabindex="0">
             <input id="newp" type="file" accept="application/pdf,.pdf">
             <p class="label-brutal">Replacement PDF</p>
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
             <strong id="newTitle">Drop PDF here</strong>
             <span id="newMeta">or click to choose · one page or many</span>
           </div>
         </div>
-      </section>
 
-      <section class="card-brutal">
-        <h2 class="card-title">2. Choose pages</h2>
-        <div class="controls">
-          <div class="form-group">
-            <label for="targetPage" class="label-brutal">Replace this page in the combined PDF</label>
+        <div class="swap-row">
+          <div class="page-col">
+            <label for="targetPage" class="label-brutal">Page to replace</label>
             <input id="targetPage" class="input-brutal" type="number" min="1" value="1" disabled>
-            <div class="hint" id="targetHint">Load the combined PDF first.</div>
+            <div class="hint" id="targetHint">Load the original PDF first.</div>
+            <div class="thumb-frame" id="origThumbFrame">
+              <canvas id="origThumb" aria-label="Original page preview"></canvas>
+              <div class="thumb-empty" id="origThumbEmpty">No preview yet</div>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="sourcePage" class="label-brutal">Use this page from the replacement PDF</label>
+          <div class="swap-arrow" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+          <div class="page-col">
+            <label for="sourcePage" class="label-brutal">Use this page</label>
             <input id="sourcePage" class="input-brutal" type="number" min="1" value="1" disabled>
             <div class="hint" id="sourceHint">Load the replacement PDF first.</div>
+            <div class="thumb-frame" id="newThumbFrame">
+              <canvas id="newThumb" aria-label="Replacement page preview"></canvas>
+              <div class="thumb-empty" id="newThumbEmpty">No preview yet</div>
+            </div>
           </div>
         </div>
-        <div class="summary" id="summary">Select both files to see the swap plan.</div>
-      </section>
 
-      <section class="card-brutal">
-        <h2 class="card-title">3. Build the new file</h2>
+        <div class="plan" id="summary">Load both files to see the swap.</div>
+
         <div class="actions">
-          <button class="btn-primary" id="go" disabled>Replace selected page and download</button>
+          <button class="btn-primary" id="go" disabled>Download replaced PDF</button>
           <button class="btn-secondary" id="reset" type="button">Clear</button>
+          <div class="status info" id="status"></div>
         </div>
-        <div class="status info" id="status"></div>
-        <p class="hint">Output name: original name + <code>-pageN-replaced.pdf</code>. Source files are not overwritten.</p>
-      </section>
+        <p class="hint">Saves as <code>original-pageN-replaced.pdf</code>. Source files are not overwritten.</p>
+      </div>
 
     </div>
   </main>
@@ -132,6 +142,7 @@
 
   
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

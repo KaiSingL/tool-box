@@ -1,165 +1,262 @@
 const { PDFDocument } = PDFLib;
 
-    const origInput = document.getElementById("orig");
-    const newInput = document.getElementById("newp");
-    const origTitle = document.getElementById("origTitle");
-    const newTitle = document.getElementById("newTitle");
-    const origMeta = document.getElementById("origMeta");
-    const newMeta = document.getElementById("newMeta");
-    const targetPage = document.getElementById("targetPage");
-    const sourcePage = document.getElementById("sourcePage");
-    const targetHint = document.getElementById("targetHint");
-    const sourceHint = document.getElementById("sourceHint");
-    const summary = document.getElementById("summary");
-    const go = document.getElementById("go");
-    const reset = document.getElementById("reset");
-    const statusEl = document.getElementById("status");
+if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 
-    const state = { origFile: null, newFile: null, origPages: 0, newPages: 0 };
+const origInput = document.getElementById('orig');
+const newInput = document.getElementById('newp');
+const origTitle = document.getElementById('origTitle');
+const newTitle = document.getElementById('newTitle');
+const origMeta = document.getElementById('origMeta');
+const newMeta = document.getElementById('newMeta');
+const targetPage = document.getElementById('targetPage');
+const sourcePage = document.getElementById('sourcePage');
+const targetHint = document.getElementById('targetHint');
+const sourceHint = document.getElementById('sourceHint');
+const summary = document.getElementById('summary');
+const go = document.getElementById('go');
+const reset = document.getElementById('reset');
+const statusEl = document.getElementById('status');
+const origCanvas = document.getElementById('origThumb');
+const newCanvas = document.getElementById('newThumb');
+const origThumbFrame = document.getElementById('origThumbFrame');
+const newThumbFrame = document.getElementById('newThumbFrame');
 
-    function setStatus(type, text) {
-      statusEl.className = "status show " + type;
-      statusEl.textContent = text;
+const state = {
+    origFile: null,
+    newFile: null,
+    origPages: 0,
+    newPages: 0,
+    origPdf: null,
+    newPdf: null
+};
+
+let thumbToken = 0;
+let thumbTimer = null;
+
+function setStatus(type, text) {
+    statusEl.className = 'status show ' + type;
+    statusEl.textContent = text;
+}
+
+function clamp(n, min, max) {
+    n = parseInt(n, 10);
+    if (!Number.isFinite(n)) return min;
+    return Math.min(max, Math.max(min, n));
+}
+
+function clearThumb(canvas, frame) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = 0;
+    canvas.height = 0;
+    frame.classList.remove('has-preview');
+}
+
+async function renderThumb(pdf, pageNum, canvas, frame) {
+    if (!pdf || typeof pdfjsLib === 'undefined') {
+        clearThumb(canvas, frame);
+        return;
     }
+    const page = await pdf.getPage(pageNum);
+    const base = page.getViewport({ scale: 1 });
+    const scale = Math.min(240 / base.width, 320 / base.height);
+    const viewport = page.getViewport({ scale });
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({
+        canvasContext: canvas.getContext('2d'),
+        viewport
+    }).promise;
+    frame.classList.add('has-preview');
+}
 
-    function clamp(n, min, max) {
-      n = parseInt(n, 10);
-      if (!Number.isFinite(n)) return min;
-      return Math.min(max, Math.max(min, n));
+async function refreshThumbs() {
+    const token = ++thumbToken;
+    const origNum = state.origPdf
+        ? clamp(targetPage.value, 1, state.origPages)
+        : 0;
+    const newNum = state.newPdf
+        ? clamp(sourcePage.value, 1, state.newPages)
+        : 0;
+    try {
+        if (state.origPdf && origNum) {
+            await renderThumb(state.origPdf, origNum, origCanvas, origThumbFrame);
+        } else {
+            clearThumb(origCanvas, origThumbFrame);
+        }
+        if (token !== thumbToken) return;
+        if (state.newPdf && newNum) {
+            await renderThumb(state.newPdf, newNum, newCanvas, newThumbFrame);
+        } else {
+            clearThumb(newCanvas, newThumbFrame);
+        }
+    } catch (err) {
+        if (token !== thumbToken) return;
+        console.warn('Preview failed', err);
     }
+}
 
-    function updatePlan() {
-      const hasOrig = !!state.origFile;
-      const hasNew = !!state.newFile;
-      go.disabled = !(hasOrig && hasNew && state.origPages > 0 && state.newPages > 0);
+function scheduleThumbs() {
+    clearTimeout(thumbTimer);
+    thumbTimer = setTimeout(refreshThumbs, 120);
+}
 
-      if (hasOrig) {
+function updatePlan() {
+    const hasOrig = !!state.origFile;
+    const hasNew = !!state.newFile;
+    go.disabled = !(hasOrig && hasNew && state.origPages > 0 && state.newPages > 0);
+
+    if (hasOrig) {
         targetPage.disabled = false;
         targetPage.max = String(state.origPages);
         targetPage.value = String(clamp(targetPage.value, 1, state.origPages));
-        targetHint.textContent = "Allowed: 1 to " + state.origPages + ".";
-      } else {
+        targetHint.textContent = 'Pages 1–' + state.origPages + '.';
+    } else {
         targetPage.disabled = true;
-        targetHint.textContent = "Load the combined PDF first.";
-      }
+        targetHint.textContent = 'Load the original PDF first.';
+    }
 
-      if (hasNew) {
+    if (hasNew) {
         sourcePage.disabled = false;
         sourcePage.max = String(state.newPages);
         sourcePage.value = String(clamp(sourcePage.value, 1, state.newPages));
-        sourceHint.textContent = "Allowed: 1 to " + state.newPages + ".";
-      } else {
+        sourceHint.textContent = 'Pages 1–' + state.newPages + '.';
+    } else {
         sourcePage.disabled = true;
-        sourceHint.textContent = "Load the replacement PDF first.";
-      }
+        sourceHint.textContent = 'Load the replacement PDF first.';
+    }
 
-      if (hasOrig && hasNew) {
+    if (hasOrig && hasNew) {
         const t = clamp(targetPage.value, 1, state.origPages);
         const s = clamp(sourcePage.value, 1, state.newPages);
-        summary.textContent = "Replace page " + t + " of " + escapeHtml(state.origFile.name) +
-          " (" + state.origPages + " pages) with page " + s + " of " +
-          state.newFile.name + " (" + state.newPages + " pages). Page count stays " +
-          state.origPages + ".";
-      } else {
-        summary.textContent = "Select both files to see the swap plan.";
-      }
+        summary.textContent =
+            'Page ' + t + ' of ' + state.origFile.name +
+            '  →  page ' + s + ' of ' + state.newFile.name +
+            '. Output stays ' + state.origPages + ' page' +
+            (state.origPages === 1 ? '' : 's') + '.';
+    } else {
+        summary.textContent = 'Load both files to see the swap.';
     }
 
-    async function inspect(file) {
-      const bytes = await file.arrayBuffer();
-      const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-      return { pages: doc.getPageCount() };
-    }
+    scheduleThumbs();
+}
 
-    async function onFile(kind, file) {
-      if (!file) return;
-      if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
-        setStatus("err", "Please choose a PDF file.");
+async function inspect(file) {
+    const bytes = await file.arrayBuffer();
+    const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+    let preview = null;
+    if (typeof pdfjsLib !== 'undefined') {
+        preview = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
+    }
+    return { pages: doc.getPageCount(), preview };
+}
+
+async function onFile(kind, file) {
+    if (!file) return;
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+        setStatus('err', 'Please choose a PDF file.');
         return;
-      }
-      setStatus("info", "Reading " + file.name + " ...");
-      try {
-        const info = await inspect(file);
-        if (info.pages < 1) throw new Error("That PDF has no pages.");
-        if (kind === "orig") {
-          state.origFile = file;
-          state.origPages = info.pages;
-          origTitle.textContent = file.name;
-          origMeta.textContent = info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
-          document.getElementById("dropOrig").classList.add("hasfile");
-        } else {
-          state.newFile = file;
-          state.newPages = info.pages;
-          newTitle.textContent = file.name;
-          newMeta.textContent = info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
-          document.getElementById("dropNew").classList.add("hasfile");
-        }
-        setStatus("ok", "File loaded.");
-        updatePlan();
-      } catch (err) {
-        setStatus("err", "Could not read that PDF. It may be damaged or use unsupported encryption. " +
-          (err && err.message ? err.message : ""));
-      }
     }
+    setStatus('info', 'Reading ' + file.name + ' ...');
+    try {
+        const info = await inspect(file);
+        if (info.pages < 1) throw new Error('That PDF has no pages.');
+        if (kind === 'orig') {
+            state.origFile = file;
+            state.origPages = info.pages;
+            state.origPdf = info.preview;
+            origTitle.textContent = file.name;
+            origMeta.textContent = info.pages + ' page' + (info.pages === 1 ? '' : 's') + ' · ' + fmtSize(file.size);
+            document.getElementById('dropOrig').classList.add('hasfile');
+        } else {
+            state.newFile = file;
+            state.newPages = info.pages;
+            state.newPdf = info.preview;
+            newTitle.textContent = file.name;
+            newMeta.textContent = info.pages + ' page' + (info.pages === 1 ? '' : 's') + ' · ' + fmtSize(file.size);
+            document.getElementById('dropNew').classList.add('hasfile');
+        }
+        setStatus('ok', 'File loaded.');
+        updatePlan();
+    } catch (err) {
+        setStatus('err', 'Could not read that PDF. It may be damaged or use unsupported encryption. ' +
+            (err && err.message ? err.message : ''));
+    }
+}
 
-    targetPage.addEventListener("input", updatePlan);
-    sourcePage.addEventListener("input", updatePlan);
+targetPage.addEventListener('input', updatePlan);
+sourcePage.addEventListener('input', updatePlan);
 
-    function wireDrop(zoneId, inputEl, kind) {
-      const zone = document.getElementById(zoneId);
-      zone.addEventListener("click", function () { inputEl.click(); });
-      zone.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputEl.click(); }
-      });
-      ["dragenter", "dragover"].forEach(function (ev) {
+function wireDrop(zoneId, inputEl, kind) {
+    const zone = document.getElementById(zoneId);
+    zone.addEventListener('click', function () { inputEl.click(); });
+    zone.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            inputEl.click();
+        }
+    });
+    ['dragenter', 'dragover'].forEach(function (ev) {
         zone.addEventListener(ev, function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          zone.classList.add("drag");
+            e.preventDefault();
+            e.stopPropagation();
+            zone.classList.add('drag');
         });
-      });
-      zone.addEventListener("dragleave", function (e) {
+    });
+    zone.addEventListener('dragleave', function (e) {
         e.preventDefault();
-        zone.classList.remove("drag");
-      });
-      zone.addEventListener("drop", function (e) {
+        zone.classList.remove('drag');
+    });
+    zone.addEventListener('drop', function (e) {
         e.preventDefault();
-        zone.classList.remove("drag");
+        zone.classList.remove('drag');
         const file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
         if (file) onFile(kind, file);
-      });
-      inputEl.addEventListener("change", function (e) {
-        onFile(kind, e.target.files[0]);
-      });
-    }
-    wireDrop("dropOrig", origInput, "orig");
-    wireDrop("dropNew", newInput, "new");
-
-    reset.addEventListener("click", () => {
-      state.origFile = null; state.newFile = null; state.origPages = 0; state.newPages = 0;
-      origInput.value = ""; newInput.value = "";
-      targetPage.value = "1"; sourcePage.value = "1";
-      origTitle.textContent = "Drop PDF here";
-      newTitle.textContent = "Drop PDF here";
-      origMeta.textContent = "or click to choose · the document with the page to replace";
-      newMeta.textContent = "or click to choose · one page or many";
-      document.getElementById("dropOrig").classList.remove("hasfile");
-      document.getElementById("dropNew").classList.remove("hasfile");
-      statusEl.className = "status";
-      statusEl.textContent = "";
-      updatePlan();
     });
+    inputEl.addEventListener('change', function (e) {
+        onFile(kind, e.target.files[0]);
+    });
+}
+wireDrop('dropOrig', origInput, 'orig');
+wireDrop('dropNew', newInput, 'new');
 
-    go.addEventListener("click", async () => {
-      if (!state.origFile || !state.newFile) return;
-      const t = clamp(targetPage.value, 1, state.origPages);
-      const s = clamp(sourcePage.value, 1, state.newPages);
-      targetPage.value = String(t);
-      sourcePage.value = String(s);
+reset.addEventListener('click', () => {
+    state.origFile = null;
+    state.newFile = null;
+    state.origPages = 0;
+    state.newPages = 0;
+    state.origPdf = null;
+    state.newPdf = null;
+    origInput.value = '';
+    newInput.value = '';
+    targetPage.value = '1';
+    sourcePage.value = '1';
+    origTitle.textContent = 'Drop PDF here';
+    newTitle.textContent = 'Drop PDF here';
+    origMeta.textContent = 'or click to choose';
+    newMeta.textContent = 'or click to choose · one page or many';
+    document.getElementById('dropOrig').classList.remove('hasfile');
+    document.getElementById('dropNew').classList.remove('hasfile');
+    statusEl.className = 'status';
+    statusEl.textContent = '';
+    clearThumb(origCanvas, origThumbFrame);
+    clearThumb(newCanvas, newThumbFrame);
+    updatePlan();
+});
 
-      go.disabled = true;
-      setStatus("info", "Replacing page " + t + " ...");
-      try {
+go.addEventListener('click', async () => {
+    if (!state.origFile || !state.newFile) return;
+    const t = clamp(targetPage.value, 1, state.origPages);
+    const s = clamp(sourcePage.value, 1, state.newPages);
+    targetPage.value = String(t);
+    sourcePage.value = String(s);
+
+    go.disabled = true;
+    setStatus('info', 'Replacing page ' + t + ' ...');
+    try {
         const origBytes = await state.origFile.arrayBuffer();
         const newBytes = await state.newFile.arrayBuffer();
         const orig = await PDFDocument.load(origBytes, { ignoreEncryption: true });
@@ -167,8 +264,8 @@ const { PDFDocument } = PDFLib;
 
         const origCount = orig.getPageCount();
         const newCount = repl.getPageCount();
-        if (t < 1 || t > origCount) throw new Error("Combined PDF page must be between 1 and " + origCount + ".");
-        if (s < 1 || s > newCount) throw new Error("Replacement PDF page must be between 1 and " + newCount + ".");
+        if (t < 1 || t > origCount) throw new Error('Original PDF page must be between 1 and ' + origCount + '.');
+        if (s < 1 || s > newCount) throw new Error('Replacement PDF page must be between 1 and ' + newCount + '.');
 
         const out = await PDFDocument.create();
         const title = orig.getTitle();
@@ -185,44 +282,47 @@ const { PDFDocument } = PDFLib;
         for (let i = targetIdx + 1; i < origCount; i++) after.push(i);
 
         if (before.length) {
-          const pages = await out.copyPages(orig, before);
-          pages.forEach(p => out.addPage(p));
+            const pages = await out.copyPages(orig, before);
+            pages.forEach(p => out.addPage(p));
         }
         const [replacement] = await out.copyPages(repl, [sourceIdx]);
         out.addPage(replacement);
         if (after.length) {
-          const pages = await out.copyPages(orig, after);
-          pages.forEach(p => out.addPage(p));
+            const pages = await out.copyPages(orig, after);
+            pages.forEach(p => out.addPage(p));
         }
 
         const saved = await out.save();
-        const blob = new Blob([saved], { type: "application/pdf" });
-        const name = baseName(state.origFile.name) + "-page" + t + "-replaced.pdf";
+        const blob = new Blob([saved], { type: 'application/pdf' });
+        const name = baseName(state.origFile.name) + '-page' + t + '-replaced.pdf';
         downloadBlob(blob, name);
-        setStatus("ok", "Done. Replaced page " + t + " with replacement page " + s +
-          ". Downloaded " + name + " (" + out.getPageCount() + " pages).");
-      } catch (err) {
-        setStatus("err", "Replace failed. " + (err && err.message ? err.message : String(err)));
-      } finally {
+        setStatus('ok', 'Downloaded ' + name + ' (' + out.getPageCount() + ' pages).');
+    } catch (err) {
+        setStatus('err', 'Replace failed. ' + (err && err.message ? err.message : String(err)));
+    } finally {
         updatePlan();
-      }
-    });
+    }
+});
 
-    function downloadBlob(blob, name) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1500);
-    }
-    function baseName(name) { return name.replace(/\.pdf$/i, ""); }
-    function fmtSize(n) {
-      if (n < 1024) return n + " B";
-      if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
-      return (n / 1048576).toFixed(2) + " MB";
-    }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
-    }
+function downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
 
-    updatePlan();
+function baseName(name) {
+    return name.replace(/\.pdf$/i, '');
+}
+
+function fmtSize(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(2) + ' MB';
+}
+
+updatePlan();

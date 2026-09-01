@@ -34,6 +34,11 @@
     background: var(--accent-glow);
 }
 
+.drop:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .drop.hasfile {
     border-style: solid;
     border-color: var(--accent);
@@ -56,11 +61,17 @@
     color: var(--text-muted);
 }
 
-.actions {
+.toolbar {
     display: flex;
-    justify-content: flex-end;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 12px;
     margin: 16px 0;
+}
+
+.toolbar .status,
+.toolbar .stats {
+    flex: 1 1 180px;
 }
 
 .btn-primary:disabled,
@@ -100,14 +111,37 @@ th {
     font-family: var(--font-display);
 }
 
+td.orig,
+td.fix {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
 td.orig {
     color: #f07178;
-    word-break: break-all;
 }
 
 td.fix {
     color: var(--accent);
     font-weight: 600;
+}
+
+td.orig.expanded,
+td.fix.expanded {
+    white-space: normal;
+    word-break: break-all;
+    overflow: visible;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 16px;
+    border: 2px dashed var(--border-color);
+    font-size: 13px;
 }
 
 td.method {

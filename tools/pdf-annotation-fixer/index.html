@@ -77,17 +77,18 @@
         </div>
       </div>
 
-      <div class="actions">
+      <div class="toolbar">
         <button type="button" id="exportBtn" class="btn-primary" disabled>Export fixed PDFs</button>
+        <div id="status" class="status">Waiting for files.</div>
+        <div id="stats" class="stats"></div>
       </div>
-      <div id="status" class="status">Waiting for files.</div>
-      <div id="stats" class="stats"></div>
 
-      <div class="table-wrap">
+      <div id="emptyState" class="empty-state">Load a PDF to list annotations.</div>
+      <div class="table-wrap hidden" id="tableWrap">
         <table>
           <thead>
             <tr>
-              <th><input type="checkbox" id="checkAll" title="Select all" hidden></th>
+              <th><input type="checkbox" id="checkAll" title="Select all"></th>
               <th>File</th>
               <th>Page</th>
               <th>Type / field</th>
@@ -96,9 +97,7 @@
               <th>Method</th>
             </tr>
           </thead>
-          <tbody id="tbody">
-            <tr><td colspan="7" class="empty">No annotations found yet. Load a PDF.</td></tr>
-          </tbody>
+          <tbody id="tbody"></tbody>
         </table>
       </div>
 

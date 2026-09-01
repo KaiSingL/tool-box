@@ -207,23 +207,29 @@
     state.files.forEach((f, fi) => {
       f.items.forEach((it, ii) => all.push({ fi, ii, f, it }));
     });
+    const emptyState = $("emptyState");
+    const tableWrap = $("tableWrap");
     if (!all.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty">No annotations found yet. Load a PDF.</td></tr>';
+      tbody.innerHTML = "";
       $("stats").textContent = "";
+      if (emptyState) emptyState.classList.remove("hidden");
+      if (tableWrap) tableWrap.classList.add("hidden");
       syncHeaderCheck();
       return;
     }
+    if (emptyState) emptyState.classList.add("hidden");
+    if (tableWrap) tableWrap.classList.remove("hidden");
     tbody.innerHTML = all
       .map(({ fi, ii, f, it }) => {
         const id = fi + ":" + ii;
         const checked = it.changed ? "checked" : "";
         return `<tr class="${it.changed ? "changed" : "same"}">
-          <td><input type="checkbox" data-id="${id}" ${checked} ${it.changed ? "" : ""}></td>
+          <td><input type="checkbox" data-id="${id}" ${checked}></td>
           <td>${escapeHtml(f.name)}</td>
           <td>${it.pageIndex + 1}</td>
           <td>${escapeHtml(it.subtype)} / ${escapeHtml(it.field)}</td>
-          <td class="orig">${escapeHtml(it.original)}</td>
-          <td class="fix">${escapeHtml(it.recovered)}</td>
+          <td class="orig" title="${escapeHtml(it.original)}">${escapeHtml(it.original)}</td>
+          <td class="fix" title="${escapeHtml(it.recovered)}">${escapeHtml(it.recovered)}</td>
           <td class="method">${escapeHtml(it.method)}</td>
         </tr>`;
       })
@@ -398,6 +404,11 @@
       return;
     }
     if (t.matches && t.matches("#tbody input[type=checkbox][data-id]")) syncHeaderCheck();
+  });
+
+  document.addEventListener("click", function (e) {
+    const cell = e.target.closest && e.target.closest("#tbody td.orig, #tbody td.fix");
+    if (cell) cell.classList.toggle("expanded");
   });
 
   syncHeaderCheck();
