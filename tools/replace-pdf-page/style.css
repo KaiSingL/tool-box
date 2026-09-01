@@ -113,6 +113,10 @@
     gap: 8px;
 }
 
+.page-col .input-brutal {
+    font-size: 16px;
+}
+
 .swap-arrow {
     display: flex;
     align-items: center;
