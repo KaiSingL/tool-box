@@ -62,6 +62,17 @@
       </div>
 
       <section class="card-brutal">
+        <h2 class="card-title">How it works</h2>
+        <ol class="how-list">
+          <li>Load both PDFs in the browser with pdf-lib.</li>
+          <li>Copy every original page except the one you chose to replace.</li>
+          <li>Insert the chosen replacement page in that same position.</li>
+          <li>Save a new PDF and trigger a download.</li>
+        </ol>
+        <p class="hint">Password-protected files may fail. Mixed paper sizes usually work. Bookmarks and form fields on the replaced page are dropped with that page.</p>
+      </section>
+
+      <section class="card-brutal">
         <h2 class="card-title">1. Choose files</h2>
         <div class="tool-grid">
           <div class="drop" id="dropOrig" tabindex="0">
@@ -104,17 +115,6 @@
         </div>
         <div class="status info" id="status"></div>
         <p class="hint">Output name: original name + <code>-pageN-replaced.pdf</code>. Source files are not overwritten.</p>
-      </section>
-
-      <section class="card-brutal">
-        <h2 class="card-title">How it works</h2>
-        <ol class="how-list">
-          <li>Load both PDFs in the browser with pdf-lib.</li>
-          <li>Copy every original page except the one you chose to replace.</li>
-          <li>Insert the chosen replacement page in that same position.</li>
-          <li>Save a new PDF and trigger a download.</li>
-        </ol>
-        <p class="hint">Password-protected files may fail. Mixed paper sizes usually work. Bookmarks and form fields on the replaced page are dropped with that page.</p>
       </section>
 
     </div>
