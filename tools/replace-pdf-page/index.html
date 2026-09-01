@@ -64,15 +64,17 @@
       <section class="card-brutal">
         <h2 class="card-title">1. Choose files</h2>
         <div class="tool-grid">
-          <div class="drop" id="dropOrig" data-target="orig">
-            <label class="label-brutal" for="orig">Combined PDF</label>
+          <div class="drop" id="dropOrig" tabindex="0">
             <input id="orig" type="file" accept="application/pdf,.pdf">
-            <div class="meta" id="origMeta">The document that contains the page you want to replace.</div>
+            <p class="label-brutal">Combined PDF</p>
+            <strong id="origTitle">Drop PDF here</strong>
+            <span id="origMeta">or click to choose · the document with the page to replace</span>
           </div>
-          <div class="drop" id="dropNew" data-target="new">
-            <label class="label-brutal" for="newp">Replacement PDF</label>
+          <div class="drop" id="dropNew" tabindex="0">
             <input id="newp" type="file" accept="application/pdf,.pdf">
-            <div class="meta" id="newMeta">The PDF that holds the new page. It can have one page or many.</div>
+            <p class="label-brutal">Replacement PDF</p>
+            <strong id="newTitle">Drop PDF here</strong>
+            <span id="newMeta">or click to choose · one page or many</span>
           </div>
         </div>
       </section>

@@ -2,6 +2,8 @@ const { PDFDocument } = PDFLib;
 
     const origInput = document.getElementById("orig");
     const newInput = document.getElementById("newp");
+    const origTitle = document.getElementById("origTitle");
+    const newTitle = document.getElementById("newTitle");
     const origMeta = document.getElementById("origMeta");
     const newMeta = document.getElementById("newMeta");
     const targetPage = document.getElementById("targetPage");
@@ -82,15 +84,15 @@ const { PDFDocument } = PDFLib;
         if (kind === "orig") {
           state.origFile = file;
           state.origPages = info.pages;
-          origMeta.innerHTML = "<strong>" + escapeHtml(file.name) + "</strong><br>" +
-            info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
-          document.getElementById("dropOrig").classList.add("has");
+          origTitle.textContent = file.name;
+          origMeta.textContent = info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
+          document.getElementById("dropOrig").classList.add("hasfile");
         } else {
           state.newFile = file;
           state.newPages = info.pages;
-          newMeta.innerHTML = "<strong>" + escapeHtml(file.name) + "</strong><br>" +
-            info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
-          document.getElementById("dropNew").classList.add("has");
+          newTitle.textContent = file.name;
+          newMeta.textContent = info.pages + " page" + (info.pages === 1 ? "" : "s") + " · " + fmtSize(file.size);
+          document.getElementById("dropNew").classList.add("hasfile");
         }
         setStatus("ok", "File loaded.");
         updatePlan();
@@ -100,35 +102,49 @@ const { PDFDocument } = PDFLib;
       }
     }
 
-    origInput.addEventListener("change", e => onFile("orig", e.target.files[0]));
-    newInput.addEventListener("change", e => onFile("new", e.target.files[0]));
     targetPage.addEventListener("input", updatePlan);
     sourcePage.addEventListener("input", updatePlan);
 
-    function wireDrop(el, kind) {
-      el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("over"); });
-      el.addEventListener("dragleave", () => el.classList.remove("over"));
-      el.addEventListener("drop", e => {
+    function wireDrop(zoneId, inputEl, kind) {
+      const zone = document.getElementById(zoneId);
+      zone.addEventListener("click", function () { inputEl.click(); });
+      zone.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inputEl.click(); }
+      });
+      ["dragenter", "dragover"].forEach(function (ev) {
+        zone.addEventListener(ev, function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.add("drag");
+        });
+      });
+      zone.addEventListener("dragleave", function (e) {
         e.preventDefault();
-        el.classList.remove("over");
-        const file = e.dataTransfer.files[0];
-        if (!file) return;
-        if (kind === "orig") origInput.files = e.dataTransfer.files;
-        else newInput.files = e.dataTransfer.files;
-        onFile(kind, file);
+        zone.classList.remove("drag");
+      });
+      zone.addEventListener("drop", function (e) {
+        e.preventDefault();
+        zone.classList.remove("drag");
+        const file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+        if (file) onFile(kind, file);
+      });
+      inputEl.addEventListener("change", function (e) {
+        onFile(kind, e.target.files[0]);
       });
     }
-    wireDrop(document.getElementById("dropOrig"), "orig");
-    wireDrop(document.getElementById("dropNew"), "new");
+    wireDrop("dropOrig", origInput, "orig");
+    wireDrop("dropNew", newInput, "new");
 
     reset.addEventListener("click", () => {
       state.origFile = null; state.newFile = null; state.origPages = 0; state.newPages = 0;
       origInput.value = ""; newInput.value = "";
       targetPage.value = "1"; sourcePage.value = "1";
-      origMeta.textContent = "The document that contains the page you want to replace.";
-      newMeta.textContent = "The PDF that holds the new page. It can have one page or many.";
-      document.getElementById("dropOrig").classList.remove("has");
-      document.getElementById("dropNew").classList.remove("has");
+      origTitle.textContent = "Drop PDF here";
+      newTitle.textContent = "Drop PDF here";
+      origMeta.textContent = "or click to choose · the document with the page to replace";
+      newMeta.textContent = "or click to choose · one page or many";
+      document.getElementById("dropOrig").classList.remove("hasfile");
+      document.getElementById("dropNew").classList.remove("hasfile");
       statusEl.className = "status";
       statusEl.textContent = "";
       updatePlan();

@@ -28,40 +28,41 @@
 }
 
 .drop {
-    border: 2px dashed var(--border-color);
-    padding: 16px;
-    min-height: 148px;
-    background: var(--bg-primary);
+    position: relative;
+    min-height: 140px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    cursor: pointer;
+    border: 2px dashed var(--border-color);
+    background: var(--bg-surface);
 }
 
-.drop.over {
+.drop:hover,
+.drop.drag {
     border-color: var(--accent);
     background: var(--accent-glow);
 }
 
-.drop.has {
+.drop.hasfile {
     border-style: solid;
     border-color: var(--accent);
 }
 
-.drop input[type="file"] {
-    width: 100%;
-    font-size: 13px;
-    color: var(--text-muted);
+.drop input {
+    display: none;
 }
 
-.meta,
+.drop strong {
+    font-family: var(--font-display);
+    font-size: 16px;
+}
+
+.drop span,
 .hint {
     font-size: 13px;
     color: var(--text-muted);
-    min-height: 2.8em;
-}
-
-.meta strong {
-    color: var(--text-primary);
 }
 
 .controls {
