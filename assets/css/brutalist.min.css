@@ -1,5 +1,6 @@
 
 
+html{-webkit-tap-highlight-color:transparent;overscroll-behavior:none}html,body{overscroll-behavior:none}.btn-primary,.btn-secondary{-webkit-user-select:none;user-select:none;touch-action:manipulation}
 :root {
  --bg-primary:#050505;
  --bg-surface:#111111;

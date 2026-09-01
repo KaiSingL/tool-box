@@ -58,7 +58,13 @@
     background: var(--bg-primary);
 }
 
-.drop:hover,
+@media (hover: hover) and (pointer: fine) {
+    .drop:hover {
+        border-color: var(--accent);
+        background: var(--accent-glow);
+    }
+}
+
 .drop.drag {
     border-color: var(--accent);
     background: var(--accent-glow);
