@@ -1,0 +1,147 @@
+.tool-container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tool-hero {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.card-brutal {
+    padding: 24px;
+}
+
+.card-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.drop {
+    border: 2px dashed var(--border-color);
+    padding: 16px;
+    min-height: 148px;
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.drop.over {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+
+.drop.has {
+    border-style: solid;
+    border-color: var(--accent);
+}
+
+.drop input[type="file"] {
+    width: 100%;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.meta,
+.hint {
+    font-size: 13px;
+    color: var(--text-muted);
+    min-height: 2.8em;
+}
+
+.meta strong {
+    color: var(--text-primary);
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary {
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 12px 14px;
+    font-size: 14px;
+    border: var(--border-thin);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+    display: none;
+    border: var(--border-thin);
+}
+
+.status.show {
+    display: block;
+}
+
+.status.ok {
+    color: var(--accent);
+}
+
+.status.err {
+    color: #f07178;
+}
+
+.status.info,
+.status.warn {
+    color: var(--text-muted);
+}
+
+.how-list {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-muted);
+}
+
+.how-list li {
+    margin: 6px 0;
+}
+
+code {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: var(--bg-elevated);
+    padding: 1px 5px;
+}
+
+@media (max-width: 720px) {
+    .tool-grid,
+    .controls {
+        grid-template-columns: 1fr;
+    }
+}

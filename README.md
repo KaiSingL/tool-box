@@ -113,6 +113,22 @@ Browse and copy Unicode symbols mapped to Lucide icon categories. Copy character
   - Search by character or category name
 - **Tech:** Vanilla JavaScript
 
+### PDF Annotation Fixer
+Repair Chinese mojibake in PDF annotation text, rebuild on-page appearance, and paint text with an imported TTF/OTF font.
+- **Features:**
+  - Load multiple PDFs and preview original vs recovered annotation text
+  - Encoding recovery for common CP1252 / UTF-8 mix-ups
+  - Export fixed PDFs with visible annotation appearance
+- **Tech:** Vanilla JavaScript, pdf-lib, FontFace API
+
+### Replace PDF Page
+Replace one page in a combined PDF with a page from another PDF.
+- **Features:**
+  - Choose source and target page numbers
+  - Drag-and-drop PDF loading
+  - Download a new file without overwriting originals
+- **Tech:** Vanilla JavaScript, pdf-lib
+
 ## 🛠️ Tech Stack
 
 This project is built with simplicity and performance in mind:

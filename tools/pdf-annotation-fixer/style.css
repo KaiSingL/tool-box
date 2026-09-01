@@ -1,0 +1,133 @@
+.tool-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px;
+}
+
+.tool-hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.drop {
+    position: relative;
+    min-height: 140px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    border: 2px dashed var(--border-color);
+    background: var(--bg-surface);
+}
+
+.drop:hover,
+.drop.drag {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+
+.drop.hasfile {
+    border-style: solid;
+    border-color: var(--accent);
+}
+
+.drop input {
+    display: none;
+}
+
+.drop strong {
+    font-family: var(--font-display);
+    font-size: 16px;
+}
+
+.drop span,
+.hint,
+.stats,
+.status {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.status.err {
+    color: #f07178;
+}
+
+.table-wrap {
+    overflow: auto;
+    border: var(--border-thin);
+    background: var(--bg-surface);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th,
+td {
+    padding: 8px 10px;
+    border-bottom: var(--border-thin);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: var(--bg-elevated);
+    position: sticky;
+    top: 0;
+    font-family: var(--font-display);
+}
+
+td.orig {
+    color: #f07178;
+    word-break: break-all;
+}
+
+td.fix {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+td.method {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+tr.same td.fix {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 24px;
+}
+
+@media (max-width: 800px) {
+    .tool-grid {
+        grid-template-columns: 1fr;
+    }
+}
